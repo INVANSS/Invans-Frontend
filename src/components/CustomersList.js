@@ -26,10 +26,11 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 export default function CustomersList() {
   const [open, setOpen] = React.useState(false);
   const [customers, setCustomers] = React.useState([]);
-  const [id, setRf] = React.useState("");
+  const [refresh, setRefresh] = React.useState(0);
+  const [id, setId] = React.useState(null);
   const [name, setName] = React.useState("");
   const [lastname, setLastname] = React.useState("");
-  const [address, setAddress] = React.useState(0);
+  const [address, setAddress] = React.useState("");
   const [tel, setTel] = React.useState(0);
   const handleClickOpen = () => {
     setOpen(true);
@@ -49,7 +50,58 @@ export default function CustomersList() {
           setCustomers(json.cliente);
         }
       });
-  }, []);
+  }, [refresh]);
+
+  const saveCustomer = () => {
+    let headers = new Headers();
+    headers.append("content-type", "application/json");
+    let url = API.HOST_CUSTOMER + API.API_URL + API.CUSTOMERS + "/";
+    if (id) {
+      url = url + id;
+    }
+    let fetchData = {
+      method: id ? "PUT" : "POST",
+      body: JSON.stringify({
+        nombre: name,
+        apellido: lastname,
+        direccion: address,
+        telf: tel,
+      }),
+      headers: headers,
+    };
+    fetch(url, fetchData).then((response) => {
+      if (response.status == 200 || response.status == 201) {
+        handleClose();
+        setRefresh(refresh + 1);
+      }
+    });
+  };
+
+  const deleteCustomer = (id) => {
+    let headers = new Headers();
+    headers.append("content-type", "application/json");
+    let fetchData = {
+      method: "DELETE",
+      headers: headers,
+    };
+    fetch(
+      API.HOST_CUSTOMER + API.API_URL + API.CUSTOMERS + "/" + id,
+      fetchData
+    ).then((response) => {
+      if (response.status == 200) {
+        setRefresh(refresh + 1);
+      }
+    });
+  };
+
+  const editCustomer = (row) => {
+    setId(row.id);
+    setName(row.nombre);
+    setLastname(row.apellido);
+    setAddress(row.direccion);
+    setTel(row.telf);
+    handleClickOpen();
+  };
 
   return (
     <>
@@ -70,9 +122,9 @@ export default function CustomersList() {
               <CloseIcon />
             </IconButton>
             <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
-              Agregar Cliente
+              {id ? "Editar Cliente" : "Agregar Cliente"}
             </Typography>
-            <Button autoFocus color="inherit" onClick={handleClose}>
+            <Button autoFocus color="inherit" onClick={saveCustomer}>
               Save
             </Button>
           </Toolbar>
@@ -97,15 +149,6 @@ export default function CustomersList() {
             <Box sx={{ display: "flex", justifyContent: "center" }}></Box>
 
             <TextField
-              value={id}
-              onChange={(event) => setRf(event.target.value)}
-              margin="normal"
-              required
-              id="id-required"
-              label="Id"
-              variant="outlined"
-            />
-            <TextField
               value={name}
               onChange={(event) => setName(event.target.value)}
               margin="normal"
@@ -129,7 +172,6 @@ export default function CustomersList() {
               value={address}
               onChange={(event) => setAddress(event.target.value)}
               margin="normal"
-              type={"number"}
               fullWidth
               required
               id="address-required"
@@ -153,7 +195,14 @@ export default function CustomersList() {
       <TableContainer component={Paper}>
         <Button
           sx={{ float: "right", marginBottom: 2 }}
-          onClick={handleClickOpen}
+          onClick={() => {
+            setId(null);
+            setName("");
+            setLastname("");
+            setAddress("");
+            setTel(0);
+            handleClickOpen();
+          }}
           variant="outlined"
         >
           Agregar Cliente
@@ -161,11 +210,10 @@ export default function CustomersList() {
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
             <TableRow>
-              <TableCell>ID</TableCell>
               <TableCell>Nombre Completo</TableCell>
               <TableCell align="right">Direccion</TableCell>
               <TableCell align="right">Telefono</TableCell>
-              <TableCell align="right">E-mail</TableCell>
+              <TableCell align="right">...</TableCell>
             </TableRow>
           </TableHead>
 
@@ -176,15 +224,15 @@ export default function CustomersList() {
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
                 <TableCell component="th" scope="row">
-                  {row.id}
-                </TableCell>
-                <TableCell component="th" scope="row">
                   {row.nombre + " " + row.apellido}
                 </TableCell>
                 <TableCell align="right">{row.direccion}</TableCell>
                 <TableCell align="right">{row.telf}</TableCell>
                 <TableCell align="right">
-                  <TableMenu />
+                  <TableMenu
+                    actionDelete={() => deleteCustomer(row.id)}
+                    actionEdit={() => editCustomer(row)}
+                  />
                 </TableCell>
               </TableRow>
             ))}

@@ -15,7 +15,6 @@ import AdbIcon from "@mui/icons-material/Adb";
 import { useNavigate } from "react-router-dom";
 
 const pages = ["Products"];
-const settings = ["Logout"];
 
 const ResponsiveAppBar = () => {
   let navigate = useNavigate();
@@ -104,6 +103,12 @@ const ResponsiveAppBar = () => {
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
             <Button
+              onClick={() => navigate("/img", { replace: true })}
+              sx={{ my: 2, color: "white", display: "block" }}
+            >
+              Presentaciones
+            </Button>
+            <Button
               onClick={() => navigate("/productos", { replace: true })}
               sx={{ my: 2, color: "white", display: "block" }}
             >
@@ -139,11 +144,9 @@ const ResponsiveAppBar = () => {
               open={Boolean(anchorElUser)}
               onClose={handleCloseUserMenu}
             >
-              {settings.map((setting) => (
-                <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                  <Typography textAlign="center">{setting}</Typography>
-                </MenuItem>
-              ))}
+              <MenuItem onClick={() => navigate("/", { replace: true })}>
+                <Typography> Logout</Typography>
+              </MenuItem>
             </Menu>
           </Box>
         </Toolbar>

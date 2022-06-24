@@ -26,6 +26,8 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 export default function ProductsList() {
   const [open, setOpen] = React.useState(false);
   const [products, setProducts] = React.useState([]);
+  const [refresh, setRefresh] = React.useState(0);
+  const [id, setId] = React.useState(null);
   const [rf, setRf] = React.useState("");
   const [name, setName] = React.useState("");
   const [cajas, setCajas] = React.useState(0);
@@ -46,7 +48,57 @@ export default function ProductsList() {
       .then((json) => {
         setProducts(json);
       });
-  }, []);
+  }, [refresh]);
+
+  const saveProduct = () => {
+    let headers = new Headers();
+    headers.append("content-type", "application/json");
+    let url = API.HOST + API.API_URL + API.PRODUCTS + "/";
+    if (id) {
+      url = url + id + "/";
+    }
+    let fetchData = {
+      method: id ? "PUT" : "POST",
+      body: JSON.stringify({
+        rf: rf,
+        name: name,
+        cajas: cajas,
+        unidades: unidades,
+      }),
+      headers: headers,
+    };
+    fetch(url, fetchData).then((response) => {
+      if (response.status == 200 || response.status == 201) {
+        handleClose();
+        setRefresh(refresh + 1);
+      }
+    });
+  };
+
+  const deleteProduct = (id) => {
+    let headers = new Headers();
+    headers.append("content-type", "application/json");
+    let fetchData = {
+      method: "DELETE",
+      headers: headers,
+    };
+    fetch(API.HOST + API.API_URL + API.PRODUCTS + "/" + id, fetchData).then(
+      (response) => {
+        if (response.status == 204) {
+          setRefresh(refresh + 1);
+        }
+      }
+    );
+  };
+
+  const editProduct = (row) => {
+    setId(row.id);
+    setRf(row.rf);
+    setName(row.name);
+    setCajas(row.cajas);
+    setUnidades(row.unidades);
+    handleClickOpen();
+  };
 
   return (
     <>
@@ -67,9 +119,9 @@ export default function ProductsList() {
               <CloseIcon />
             </IconButton>
             <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
-              Agregar Producto
+              {id ? "Editar Producto" : "Agregar Producto"}
             </Typography>
-            <Button autoFocus color="inherit" onClick={handleClose}>
+            <Button autoFocus color="inherit" onClick={saveProduct}>
               Save
             </Button>
           </Toolbar>
@@ -140,7 +192,14 @@ export default function ProductsList() {
       <TableContainer component={Paper}>
         <Button
           sx={{ float: "right", marginBottom: 2 }}
-          onClick={handleClickOpen}
+          onClick={() => {
+            setId(null);
+            setRf("");
+            setName("");
+            setCajas(0);
+            setUnidades(0);
+            handleClickOpen();
+          }}
           variant="outlined"
         >
           Agregar Producto
@@ -171,7 +230,10 @@ export default function ProductsList() {
                 <TableCell align="right">{row.cajas}</TableCell>
                 <TableCell align="right">{row.unidades}</TableCell>
                 <TableCell align="right">
-                  <TableMenu />
+                  <TableMenu
+                    actionDelete={() => deleteProduct(row.id)}
+                    actionEdit={() => editProduct(row)}
+                  />
                 </TableCell>
               </TableRow>
             ))}

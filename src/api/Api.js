@@ -4,6 +4,7 @@ const API = {
   API_URL: "/api",
   PRODUCTS: "/product",
   CUSTOMERS: "/clientes",
+  IMAGEN: "/img",
 };
 
 export default API;

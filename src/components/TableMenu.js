@@ -5,7 +5,7 @@ import MenuItem from "@mui/material/MenuItem";
 import IconButton from "@mui/material/IconButton";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 
-export default function TableMenu() {
+export default function TableMenu({ actionDelete, actionEdit }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
   const handleClick = (event) => {
@@ -36,8 +36,22 @@ export default function TableMenu() {
           "aria-labelledby": "basic-button",
         }}
       >
-        <MenuItem onClick={handleClose}>Editar</MenuItem>
-        <MenuItem onClick={handleClose}>Borrar</MenuItem>
+        <MenuItem
+          onClick={() => {
+            actionEdit();
+            handleClose();
+          }}
+        >
+          Editar
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            actionDelete();
+            handleClose();
+          }}
+        >
+          Borrar
+        </MenuItem>
       </Menu>
     </div>
   );

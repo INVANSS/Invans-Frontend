@@ -26,7 +26,7 @@ export default function Login() {
     const auth = getAuth(app);
     signInWithEmailAndPassword(auth, username, password)
       .then((userCredential) => {
-        navigate("/productos", { replace: true });
+        navigate("/img", { replace: true });
       })
       .catch((error) => {
         setLoading(false);
